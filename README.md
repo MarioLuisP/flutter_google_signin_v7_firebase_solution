@@ -242,7 +242,7 @@ class _AuthWrapperState extends State<AuthWrapper> {
 
 ### Before (with Google Sign-In v7 default behavior):
 - ❌ Users logged out after app killed
-- ❌ 20-40% abandonment on re-login screen
+- ❌ Users forced to re-authenticate every time Android killed the app
 - ❌ Metrics unreliable
 
 ### After (with this solution):
