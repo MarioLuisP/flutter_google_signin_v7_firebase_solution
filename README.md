@@ -62,21 +62,35 @@ _googleSignIn.authenticationEvents.listen(...)
 
 ### The Architecture
 
-┌─────────────────────────────────────────────┐
-│  Google Sign-In v7                          │
-│  (Used ONLY for initial authentication)     │
-└──────────────────┬──────────────────────────┘
-                   ▼
-┌─────────────────────────────────────────────┐
-│  Firebase Auth                              │
-│  (Single source of truth - persists         │
-│   automatically across app restarts)        │
-└──────────────────┬──────────────────────────┘
-                   ▼
-┌─────────────────────────────────────────────┐
-│  Your UI                                    │
-│  (Reads from Firebase Auth only)            │
-└─────────────────────────────────────────────┘
+```mermaid
+flowchart TD
+    subgraph FIRST_LOGIN ["First login (happens once)"]
+        A[User taps Sign in with Google] --> B[google_sign_in v7\nauthenticate]
+        B --> C[Returns idToken]
+        C --> D[Firebase Auth\nsignInWithCredential]
+        D --> E[Session saved to\nnative secure storage]
+        E --> F[google_sign_in\nis done — not used again]
+    end
+
+    subgraph COLD_START ["Every cold start after that"]
+        G[App opens] --> H[Firebase.initializeApp\nreads local storage]
+        H --> I[authStateChanges\nemits persisted User]
+        I --> J[UI shows home screen\n~100ms, no network, no dialog]
+    end
+
+    style F fill:#fdd,stroke:#f99
+    style J fill:#dfd,stroke:#9d9
+```
+
+### ❌ vs ✅ — The critical difference
+
+| ❌ Don't | ✅ Do | Why |
+|---------|------|-----|
+| `attemptLightweightAuthentication()` on startup | Listen to `authStateChanges` | LWA always shows UI — it is not silent |
+| Cache email in `SharedPreferences` | Trust `Firebase.currentUser` | SharedPreferences stores display data, not auth sessions |
+| Check `_googleSignIn.currentUser` on cold start | Check `_auth.currentUser` | google_sign_in.currentUser is **always null** after app kill in v7 |
+| Call `Firebase.initializeApp()` after `runApp()` | Call it in `main()` before `runApp()` | AuthProvider constructor runs before Firebase is ready — stream never fires |
+| Sync user to Firestore for "persistence" | Nothing — Firebase Auth already persists | Firestore stores data, not auth sessions. It's duplicated work |
 
 
 ---
@@ -112,10 +126,10 @@ Future<void> initializeAuth() async {
 
 ```yaml
 dependencies:
-  firebase_core: ^2.24.0
-  firebase_auth: ^4.16.0
-  google_sign_in: ^7.0.0
-  provider: ^6.1.0  # For state management
+  firebase_core: ^4.1.1
+  firebase_auth: ^6.1.0
+  google_sign_in: ^7.2.0
+  provider: ^6.1.1
 ```
 
 ### 2. Initialize Firebase
