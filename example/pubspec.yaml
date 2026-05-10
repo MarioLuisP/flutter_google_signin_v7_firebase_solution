@@ -1,0 +1,36 @@
+name: google_signin_v7_demo
+description: "Demo app: Google Sign-In v7 + Firebase Auth persistence solution"
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.11.0
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # Firebase
+  firebase_core: ^4.1.1
+  firebase_auth: ^6.1.0
+
+  # Google Sign-In v7 (2025 API)
+  google_sign_in: ^7.2.0
+
+  # Apple Sign-In (iOS only)
+  sign_in_with_apple: ^7.0.1
+  crypto: ^3.0.6
+
+  # State management
+  provider: ^6.1.1
+
+  cupertino_icons: ^1.0.8
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+flutter:
+  uses-material-design: true
