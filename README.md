@@ -64,22 +64,20 @@ _googleSignIn.authenticationEvents.listen(...)
 
 ```mermaid
 flowchart TD
-    subgraph FIRST_LOGIN ["First login (happens once)"]
-        A[User taps Sign in with Google] --> B[google_sign_in v7\nauthenticate]
-        B --> C[Returns idToken]
-        C --> D[Firebase Auth\nsignInWithCredential]
-        D --> E[Session saved to\nnative secure storage]
-        E --> F[google_sign_in\nis done — not used again]
-    end
+    A([App start]) --> B{Firebase Auth\nhas saved session?}
 
-    subgraph COLD_START ["Every cold start after that"]
-        G[App opens] --> H[Firebase.initializeApp\nreads local storage]
-        H --> I[authStateChanges\nemits persisted User]
-        I --> J[UI shows home screen\n~100ms, no network, no dialog]
-    end
+    B -- No --> C[🔑 google_sign_in v7\nauthenticate — happens ONCE]
+    C --> D[Firebase Auth\nsignInWithCredential]
+    D --> E[(Secure storage\nKeychain · EncryptedSharedPreferences)]
 
-    style F fill:#fdd,stroke:#f99
-    style J fill:#dfd,stroke:#9d9
+    B -- Yes --> E
+
+    E --> F[authStateChanges\nemits persisted User]
+    F --> G([🏠 Home screen\nno dialog · no network · ~100ms])
+
+    style C fill:#fff3cd,stroke:#ffc107
+    style E fill:#e3f2fd,stroke:#2196f3
+    style G fill:#d4edda,stroke:#28a745
 ```
 
 ### ❌ vs ✅ — The critical difference
